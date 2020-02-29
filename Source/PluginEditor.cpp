@@ -28,15 +28,49 @@ HelloSamplerAudioProcessorEditor::~HelloSamplerAudioProcessorEditor()
 //==============================================================================
 void HelloSamplerAudioProcessorEditor::paint (Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
+    g.fillAll (Colours::black);
+    
     g.setColour (Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
+    
+    if (processor.getNumSamplerSounds() > 0)
+    {
+        g.fillAll (Colours::red);
+        g.drawText ("Sound Loaded", getWidth() / 2 - 50, getHeight() / 2 - 10, 100, 20, Justification::centred);
+    }
+    else
+    {
+        g.drawText ("Load a Sound", getWidth() / 2 - 50, getHeight() / 2 - 10, 100, 20, Justification::centred);
+    }
 }
 
 void HelloSamplerAudioProcessorEditor::resized()
 {
-    mLoadButton.setBounds (getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
+    //mLoadButton.setBounds (getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
+}
+
+bool HelloSamplerAudioProcessorEditor::isInterestedInFileDrag (const StringArray& files)
+{
+    for (auto file : files)
+    {
+        if (file.contains (".wav") || file.contains (".mp3") || file.contains (".aif"))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+void HelloSamplerAudioProcessorEditor::filesDropped (const StringArray& files, int x, int y)
+{
+    for (auto file : files)
+    {
+        if (isInterestedInFileDrag (file))
+        {
+            processor.loadFile (file);
+        }
+    }
+    
+    repaint();
 }
