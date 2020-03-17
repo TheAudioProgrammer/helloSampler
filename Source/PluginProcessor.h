@@ -60,6 +60,13 @@ public:
     
     int getNumSamplerSounds() { return mSampler.getNumSounds(); }
     AudioBuffer<float>& getWaveForm() { return mWaveForm; }
+    
+    void getADSRValue();
+    
+    float attack { 0.0 };
+    float decay { 0.0 };
+    float sustain { 0.0 };
+    float release { 0.0 };
 
 private:
     Synthesiser mSampler;

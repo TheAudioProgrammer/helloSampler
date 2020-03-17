@@ -23,6 +23,7 @@ HelloSamplerAudioProcessorEditor::HelloSamplerAudioProcessorEditor (HelloSampler
     mAttackSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
     mAttackSlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
     mAttackSlider.setRange (0.0f, 5.0f, 0.01f);
+    mAttackSlider.addListener (this);
     addAndMakeVisible (mAttackSlider);
     
     mAttackLabel.setFont (10.0f);
@@ -35,6 +36,7 @@ HelloSamplerAudioProcessorEditor::HelloSamplerAudioProcessorEditor (HelloSampler
     mDecaySlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
     mDecaySlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
     mDecaySlider.setRange (0.0f, 5.0f, 0.01f);
+    mDecaySlider.addListener (this);
     addAndMakeVisible (mDecaySlider);
     
     mDecayLabel.setFont (10.0f);
@@ -47,6 +49,7 @@ HelloSamplerAudioProcessorEditor::HelloSamplerAudioProcessorEditor (HelloSampler
     mSustainSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
     mSustainSlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
     mSustainSlider.setRange (0.0f, 1.0f, 0.01f);
+    mSustainSlider.addListener (this);
     addAndMakeVisible (mSustainSlider);
     
     mSustainLabel.setFont (10.0f);
@@ -59,6 +62,7 @@ HelloSamplerAudioProcessorEditor::HelloSamplerAudioProcessorEditor (HelloSampler
     mReleaseSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
     mReleaseSlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
     mReleaseSlider.setRange (0.0f, 5.0f, 0.01f);
+    mReleaseSlider.addListener (this);
     addAndMakeVisible (mReleaseSlider);
     
     mReleaseLabel.setFont (10.0f);
@@ -163,4 +167,24 @@ void HelloSamplerAudioProcessorEditor::filesDropped (const StringArray& files, i
     }
     
     repaint();
+}
+
+void HelloSamplerAudioProcessorEditor::sliderValueChanged (Slider* slider)
+{
+    if (slider == &mAttackSlider)
+    {
+        processor.attack = mAttackSlider.getValue();
+    }
+    else if (slider == &mDecaySlider)
+    {
+        processor.decay = mDecaySlider.getValue();
+    }
+    else if (slider == &mSustainSlider)
+    {
+        processor.sustain = mSustainSlider.getValue();
+    }
+    else if (slider == &mReleaseSlider)
+    {
+        processor.release = mReleaseSlider.getValue();
+    }
 }
