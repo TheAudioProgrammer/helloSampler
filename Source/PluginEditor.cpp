@@ -173,18 +173,20 @@ void HelloSamplerAudioProcessorEditor::sliderValueChanged (Slider* slider)
 {
     if (slider == &mAttackSlider)
     {
-        processor.attack = mAttackSlider.getValue();
+        processor.getADSRParams().attack = mAttackSlider.getValue();
     }
     else if (slider == &mDecaySlider)
     {
-        processor.decay = mDecaySlider.getValue();
+        processor.getADSRParams().decay = mDecaySlider.getValue();
     }
     else if (slider == &mSustainSlider)
     {
-        processor.sustain = mSustainSlider.getValue();
+        processor.getADSRParams().sustain = mSustainSlider.getValue();
     }
     else if (slider == &mReleaseSlider)
     {
-        processor.release = mReleaseSlider.getValue();
+        processor.getADSRParams().release = mReleaseSlider.getValue();
     }
+    
+    processor.updateADSR();
 }
