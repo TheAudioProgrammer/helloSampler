@@ -21,10 +21,11 @@ HelloSamplerAudioProcessor::HelloSamplerAudioProcessor()
                       #endif
                        .withOutput ("Output", AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), mAPVTS (*this, nullptr, "Parameters", createParameters())
 #endif
 {
     mFormatManager.registerBasicFormats();
+    mAPVTS.state.addListener (this);
     
     for (int i = 0; i < mNumVoices; i++)
     {
@@ -34,6 +35,7 @@ HelloSamplerAudioProcessor::HelloSamplerAudioProcessor()
 
 HelloSamplerAudioProcessor::~HelloSamplerAudioProcessor()
 {
+    mAPVTS.state.removeListener (this);
     mFormatReader = nullptr;
 }
 
@@ -144,6 +146,11 @@ void HelloSamplerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    
+    if (mShouldUpdate)
+    {
+        updateADSR();
+    }
 
     mSampler.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 }
@@ -207,10 +214,19 @@ void HelloSamplerAudioProcessor::loadFile (const String& path)
     range.setRange (0, 128, true);
     
     mSampler.addSound (new SamplerSound ("Sample", *mFormatReader, range, 60, 0.1, 0.1, 10.0));
+    
+    updateADSR();
 }
 
 void HelloSamplerAudioProcessor::updateADSR()
 {
+    mShouldUpdate = false;
+    
+    mADSRParams.attack = mAPVTS.getRawParameterValue ("ATTACK")->load();
+    mADSRParams.decay = mAPVTS.getRawParameterValue ("DECAY")->load();
+    mADSRParams.sustain = mAPVTS.getRawParameterValue ("SUSTAIN")->load();
+    mADSRParams.release = mAPVTS.getRawParameterValue ("RELEASE")->load();
+    
     for (int i = 0; i < mSampler.getNumSounds(); ++i)
     {
         if (auto sound = dynamic_cast<SamplerSound*>(mSampler.getSound(i).get()))
@@ -218,6 +234,23 @@ void HelloSamplerAudioProcessor::updateADSR()
             sound->setEnvelopeParameters (mADSRParams);
         }
     }
+}
+
+AudioProcessorValueTreeState::ParameterLayout HelloSamplerAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<RangedAudioParameter>> params;
+    
+    params.push_back (std::make_unique<AudioParameterFloat>("ATTACK", "Attack", 0.0f, 5.0f, 0.0f));
+    params.push_back (std::make_unique<AudioParameterFloat>("DECAY", "Decay", 0.0f, 5.0f, 2.0f));
+    params.push_back (std::make_unique<AudioParameterFloat>("SUSTAIN", "Sustain", 0.0f, 1.0f, 1.0f));
+    params.push_back (std::make_unique<AudioParameterFloat>("RELEASE", "Release", 0.0f, 5.0f, 0.0f));
+    
+    return { params.begin(), params.end() };
+}
+
+void HelloSamplerAudioProcessor::valueTreePropertyChanged (ValueTree &treeWhosePropertyHasChanged, const Identifier &property)
+{
+    mShouldUpdate = true;
 }
 
 //==============================================================================
