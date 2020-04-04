@@ -2,7 +2,7 @@
   ==============================================================================
 
     ADSRComponent.cpp
-    Created: 14 Mar 2020 2:52:49pm
+    Created: 4 Apr 2020 7:35:53pm
     Author:  Joshua Hodge
 
   ==============================================================================
@@ -14,35 +14,61 @@
 //==============================================================================
 ADSRComponent::ADSRComponent (HelloSamplerAudioProcessor& p) : processor (p)
 {
-    mAttackSlider.setRange (0.1f, 2.0f, 0.01f);
-    mAttackSlider.setValue (0.1f);
+    //Attack Slider
     mAttackSlider.setSliderStyle (Slider::SliderStyle::RotaryVerticalDrag);
-    mAttackSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 35, 20);
+    mAttackSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
+    mAttackSlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
+    //mAttackSlider.setRange (0.0f, 5.0f, 0.01f);
     addAndMakeVisible (mAttackSlider);
-    mAttackSlider.addListener (this);
     
-    mDecaySlider.setRange (0.1f, 1.0f, 0.01f);
-    mDecaySlider.setValue (0.1f);
+    mAttackLabel.setFont (10.0f);
+    mAttackLabel.setText ("Attack", NotificationType::dontSendNotification);
+    mAttackLabel.setJustificationType (Justification::centredTop);
+    mAttackLabel.attachToComponent (&mAttackSlider, false);
+    
+    mAttackAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getValueTree(), "ATTACK", mAttackSlider);
+    
+    //Decay Slider
     mDecaySlider.setSliderStyle (Slider::SliderStyle::RotaryVerticalDrag);
-    mDecaySlider.setTextBoxStyle (Slider::TextBoxBelow, true, 35, 20);
+    mDecaySlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
+    mDecaySlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
+    //mDecaySlider.setRange (0.0f, 5.0f, 0.01f);
     addAndMakeVisible (mDecaySlider);
-    mDecaySlider.addListener (this);
     
-    mSustainSlider.setRange (0.1f, 1.0f, 0.01f);
-    mSustainSlider.setValue (1.0f);
+    mDecayLabel.setFont (10.0f);
+    mDecayLabel.setText ("Decay", NotificationType::dontSendNotification);
+    mDecayLabel.setJustificationType (Justification::centredTop);
+    mDecayLabel.attachToComponent (&mDecaySlider, false);
+    
+    mDecayAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getValueTree(), "DECAY", mDecaySlider);
+    
+    //Sustain Slider
     mSustainSlider.setSliderStyle (Slider::SliderStyle::RotaryVerticalDrag);
-    mSustainSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 35, 20);
+    mSustainSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
+    mSustainSlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
+    //mSustainSlider.setRange (0.0f, 1.0f, 0.01f);
     addAndMakeVisible (mSustainSlider);
-    mSustainSlider.addListener (this);
     
-    mReleaseSlider.setRange (0.1f, 5.0f, 0.01f);
-    mReleaseSlider.setValue (0.4f);
+    mSustainLabel.setFont (10.0f);
+    mSustainLabel.setText ("Sustain", NotificationType::dontSendNotification);
+    mSustainLabel.setJustificationType (Justification::centredTop);
+    mSustainLabel.attachToComponent (&mSustainSlider, false);
+    
+    mSustainAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getValueTree(), "SUSTAIN", mSustainSlider);
+    
+    //Release Slider
     mReleaseSlider.setSliderStyle (Slider::SliderStyle::RotaryVerticalDrag);
-    mReleaseSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 35, 20);
+    mReleaseSlider.setTextBoxStyle (Slider::TextBoxBelow, true, 40, 20);
+    mReleaseSlider.setColour (Slider::ColourIds::thumbColourId, Colours::red);
+    //mReleaseSlider.setRange (0.0f, 5.0f, 0.01f);
     addAndMakeVisible (mReleaseSlider);
-    mReleaseSlider.addListener (this);
     
-    setSize (400, 200);
+    mReleaseLabel.setFont (10.0f);
+    mReleaseLabel.setText ("Release", NotificationType::dontSendNotification);
+    mReleaseLabel.setJustificationType (Justification::centredTop);
+    mReleaseLabel.attachToComponent (&mReleaseSlider, false);
+    
+    mReleaseAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment>(processor.getValueTree(), "RELEASE", mReleaseSlider);
 }
 
 ADSRComponent::~ADSRComponent()
@@ -51,40 +77,18 @@ ADSRComponent::~ADSRComponent()
 
 void ADSRComponent::paint (Graphics& g)
 {
-    g.fillAll (Colours::orangered);
+    g.fillAll (Colours::black);
 }
 
 void ADSRComponent::resized()
 {
-    const auto dialSizeX = 0.25f;
-    const auto dialSizeY = 0.6f;
-    const auto yPosition = 0.2f;
+    const auto startX = 0.6f;
+    const auto startY = 0.2f;
+    const auto dialWidth = 0.1f;
+    const auto dialHeight = 0.75f;
     
-    mAttackSlider.setBoundsRelative (0.0f, yPosition, dialSizeX, dialSizeY);
-    mDecaySlider.setBoundsRelative (0.25f, yPosition, dialSizeX, dialSizeY);
-    mSustainSlider.setBoundsRelative (0.5f, yPosition, dialSizeX, dialSizeY);
-    mReleaseSlider.setBoundsRelative (0.75f, yPosition, dialSizeX, dialSizeY);
-}
-
-void ADSRComponent::sliderValueChanged (Slider *slider)
-{
-    if (slider == &mAttackSlider)
-    {
-        processor.setADSRAttack (mAttackSlider.getValue());
-    }
-    
-    if (slider == &mDecaySlider)
-    {
-        processor.setADSRDecay (mDecaySlider.getValue());
-    }
-    
-    if (slider == &mSustainSlider)
-    {
-        processor.setADSRSustain (mSustainSlider.getValue());
-    }
-    
-    if (slider == &mReleaseSlider)
-    {
-        processor.setADSRRelease (mReleaseSlider.getValue());
-    }
+    mAttackSlider.setBoundsRelative (startX, startY, dialWidth, dialHeight);
+    mDecaySlider.setBoundsRelative (startX + dialWidth, startY, dialWidth, dialHeight);
+    mSustainSlider.setBoundsRelative (startX + (dialWidth * 2), startY, dialWidth, dialHeight);
+    mReleaseSlider.setBoundsRelative (startX + (dialWidth * 3), startY, dialWidth, dialHeight);
 }
