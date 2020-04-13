@@ -60,6 +60,14 @@ void WaveThumbnail::paint (Graphics& g)
         g.setFont (15.0f);
         auto textBounds = getLocalBounds().reduced (10, 10);
         g.drawFittedText (mFileName, textBounds, Justification::topRight, 1);
+        
+        auto playHeadPosition = jmap<int> (processor.getSampleCount(), 0, processor.getWaveForm().getNumSamples(), 0, getWidth());
+        
+        g.setColour (Colours::white);
+        g.drawLine (playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
+        
+        g.setColour (Colours::black.withAlpha (0.2f));
+        g.fillRect (0, 0, playHeadPosition, getHeight());
     }
     else
     {

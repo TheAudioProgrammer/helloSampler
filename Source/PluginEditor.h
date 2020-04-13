@@ -18,7 +18,8 @@
 //==============================================================================
 /**
 */
-class HelloSamplerAudioProcessorEditor  : public AudioProcessorEditor
+class HelloSamplerAudioProcessorEditor  : public AudioProcessorEditor,
+                                          public Timer
 {
 public:
     HelloSamplerAudioProcessorEditor (HelloSamplerAudioProcessor&);
@@ -27,6 +28,8 @@ public:
     //==============================================================================
     void paint (Graphics&) override;
     void resized() override;
+    
+    void timerCallback() override;
 
 private:    
     WaveThumbnail mWaveThumbnail;
