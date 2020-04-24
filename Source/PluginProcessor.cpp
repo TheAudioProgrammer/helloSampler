@@ -202,13 +202,13 @@ void HelloSamplerAudioProcessor::loadFile()
     if (chooser.browseForFileToOpen())
     {
         auto file = chooser.getResult();
-        auto reader = mFormatManager.createReaderFor (file);
+        // the reader can be a local variable here since it's not needed by the SamplerSound after this
+        std::unique_ptr<AudioFormatReader> reader{ mFormatManager.createReaderFor(file) };
         if (reader)
         {
             BigInteger range;
             range.setRange(0, 128, true);
             mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
-            delete reader; // reader is no longer needed, the SamplerSound already used it and won't need it further
         }
         
     }
@@ -221,7 +221,8 @@ void HelloSamplerAudioProcessor::loadFile (const String& path)
     mSampler.clearSounds();
     
     auto file = File (path);
-    auto reader = mFormatManager.createReaderFor (file);
+    // the reader can be a local variable here since it's not needed by the other classes after this
+    std::unique_ptr<AudioFormatReader> reader{ mFormatManager.createReaderFor(file) };
     if (reader)
     {
         auto sampleLength = static_cast<int>(reader->lengthInSamples);
@@ -233,7 +234,6 @@ void HelloSamplerAudioProcessor::loadFile (const String& path)
         range.setRange(0, 128, true);
 
         mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
-        delete reader; // reader no longer needed, it was already used by the classes that need it
         updateADSR();
     }
     
