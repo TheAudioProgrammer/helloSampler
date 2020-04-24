@@ -241,6 +241,10 @@ AudioBuffer<float>& HelloSamplerAudioProcessor::getWaveForm()
     {
         return *sound->getAudioData();
     }
+    // just in case it somehow happens that the sound doesn't exist or isn't a SamplerSound,
+    // return a static instance of an empty AudioBuffer here...
+    static AudioBuffer<float> dummybuffer;
+    return dummybuffer;
 }
 
 void HelloSamplerAudioProcessor::updateADSR()
