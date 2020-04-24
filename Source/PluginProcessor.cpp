@@ -36,7 +36,6 @@ HelloSamplerAudioProcessor::HelloSamplerAudioProcessor()
 HelloSamplerAudioProcessor::~HelloSamplerAudioProcessor()
 {
     mAPVTS.state.removeListener (this);
-    mFormatReader = nullptr;
 }
 
 //==============================================================================
@@ -203,13 +202,18 @@ void HelloSamplerAudioProcessor::loadFile()
     if (chooser.browseForFileToOpen())
     {
         auto file = chooser.getResult();
-        mFormatReader = mFormatManager.createReaderFor (file);
+        auto reader = mFormatManager.createReaderFor (file);
+        if (reader)
+        {
+            BigInteger range;
+            range.setRange(0, 128, true);
+            mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
+            delete reader; // reader is no longer needed, the SamplerSound already used it and won't need it further
+        }
+        
     }
     
-    BigInteger range;
-    range.setRange (0, 128, true);
     
-    mSampler.addSound (new SamplerSound ("Sample", *mFormatReader, range, 60, 0.1, 0.1, 10.0));
 }
 
 void HelloSamplerAudioProcessor::loadFile (const String& path)
@@ -217,19 +221,22 @@ void HelloSamplerAudioProcessor::loadFile (const String& path)
     mSampler.clearSounds();
     
     auto file = File (path);
-    mFormatReader = mFormatManager.createReaderFor (file);
+    auto reader = mFormatManager.createReaderFor (file);
+    if (reader)
+    {
+        auto sampleLength = static_cast<int>(reader->lengthInSamples);
+
+        mWaveForm.setSize(1, sampleLength);
+        reader->read(&mWaveForm, 0, sampleLength, 0, true, false);
+
+        BigInteger range;
+        range.setRange(0, 128, true);
+
+        mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
+        delete reader; // reader no longer needed, it was already used by the classes that need it
+        updateADSR();
+    }
     
-    auto sampleLength = static_cast<int>(mFormatReader->lengthInSamples);
-    
-    mWaveForm.setSize (1, sampleLength);
-    mFormatReader->read (&mWaveForm, 0, sampleLength, 0, true, false);
-        
-    BigInteger range;
-    range.setRange (0, 128, true);
-    
-    mSampler.addSound (new SamplerSound ("Sample", *mFormatReader, range, 60, 0.1, 0.1, 10.0));
-    
-    updateADSR();
 }
 
 void HelloSamplerAudioProcessor::updateADSR()

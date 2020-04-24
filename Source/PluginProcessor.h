@@ -77,7 +77,7 @@ private:
     ADSR::Parameters mADSRParams;
     
     AudioFormatManager mFormatManager;
-    AudioFormatReader* mFormatReader { nullptr };
+    
     
     AudioProcessorValueTreeState mAPVTS;
     AudioProcessorValueTreeState::ParameterLayout createParameters();
