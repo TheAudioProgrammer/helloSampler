@@ -225,18 +225,22 @@ void HelloSamplerAudioProcessor::loadFile (const String& path)
     std::unique_ptr<AudioFormatReader> reader{ mFormatManager.createReaderFor(file) };
     if (reader)
     {
-        auto sampleLength = static_cast<int>(reader->lengthInSamples);
-
-        mWaveForm.setSize(1, sampleLength);
-        reader->read(&mWaveForm, 0, sampleLength, 0, true, false);
-
         BigInteger range;
         range.setRange(0, 128, true);
-
         mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
         updateADSR();
     }
     
+}
+
+AudioBuffer<float>& HelloSamplerAudioProcessor::getWaveForm()
+{
+    // get the last added synth sound as a SamplerSound*
+    auto sound = dynamic_cast<SamplerSound*>(mSampler.getSound(mSampler.getNumSounds() - 1).get());
+    if (sound)
+    {
+        return *sound->getAudioData();
+    }
 }
 
 void HelloSamplerAudioProcessor::updateADSR()
