@@ -18,6 +18,9 @@
             file="Source/ADSRComponent.cpp"/>
       <FILE id="Hj3zdH" name="ADSRComponent.h" compile="0" resource="0" file="Source/ADSRComponent.h"/>
     </GROUP>
+    <GROUP id="{BFC291E8-4FDE-076D-EFCE-7C589FF5E777}" name="Resources">
+      <FILE id="dnuvWI" name="TAP.png" compile="0" resource="1" file="../../../../../Desktop/templatedelay/Resources/TAP.png"/>
+    </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
     <XCODE_MAC targetFolder="Builds/MacOSX">

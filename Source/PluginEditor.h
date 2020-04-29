@@ -34,6 +34,7 @@ public:
 private:    
     WaveThumbnail mWaveThumbnail;
     ADSRComponent mADSR;
+    ImageComponent mImageComponent;
     
     HelloSamplerAudioProcessor& processor;
 
