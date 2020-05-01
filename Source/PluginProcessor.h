@@ -60,7 +60,7 @@ public:
     void loadFile (const String& path);
     
     int getNumSamplerSounds() { return mSampler.getNumSounds(); }
-    AudioBuffer<float>& getWaveForm() { return mWaveForm; }
+    AudioBuffer<float>& getWaveForm();
     
     void updateADSR();
     ADSR::Parameters& getADSRParams() { return mADSRParams; }
@@ -72,12 +72,12 @@ public:
 private:
     Synthesiser mSampler;
     const int mNumVoices { 3 };
-    AudioBuffer<float> mWaveForm;
+    
     
     ADSR::Parameters mADSRParams;
     
     AudioFormatManager mFormatManager;
-    AudioFormatReader* mFormatReader { nullptr };
+    
     
     AudioProcessorValueTreeState mAPVTS;
     AudioProcessorValueTreeState::ParameterLayout createParameters();

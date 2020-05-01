@@ -36,7 +36,6 @@ HelloSamplerAudioProcessor::HelloSamplerAudioProcessor()
 HelloSamplerAudioProcessor::~HelloSamplerAudioProcessor()
 {
     mAPVTS.state.removeListener (this);
-    mFormatReader = nullptr;
 }
 
 //==============================================================================
@@ -203,13 +202,18 @@ void HelloSamplerAudioProcessor::loadFile()
     if (chooser.browseForFileToOpen())
     {
         auto file = chooser.getResult();
-        mFormatReader = mFormatManager.createReaderFor (file);
+        // the reader can be a local variable here since it's not needed by the SamplerSound after this
+        std::unique_ptr<AudioFormatReader> reader{ mFormatManager.createReaderFor(file) };
+        if (reader)
+        {
+            BigInteger range;
+            range.setRange(0, 128, true);
+            mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
+        }
+        
     }
     
-    BigInteger range;
-    range.setRange (0, 128, true);
     
-    mSampler.addSound (new SamplerSound ("Sample", *mFormatReader, range, 60, 0.1, 0.1, 10.0));
 }
 
 void HelloSamplerAudioProcessor::loadFile (const String& path)
@@ -217,19 +221,30 @@ void HelloSamplerAudioProcessor::loadFile (const String& path)
     mSampler.clearSounds();
     
     auto file = File (path);
-    mFormatReader = mFormatManager.createReaderFor (file);
+    // the reader can be a local variable here since it's not needed by the other classes after this
+    std::unique_ptr<AudioFormatReader> reader{ mFormatManager.createReaderFor(file) };
+    if (reader)
+    {
+        BigInteger range;
+        range.setRange(0, 128, true);
+        mSampler.addSound(new SamplerSound("Sample", *reader, range, 60, 0.1, 0.1, 10.0));
+        updateADSR();
+    }
     
-    auto sampleLength = static_cast<int>(mFormatReader->lengthInSamples);
-    
-    mWaveForm.setSize (1, sampleLength);
-    mFormatReader->read (&mWaveForm, 0, sampleLength, 0, true, false);
-        
-    BigInteger range;
-    range.setRange (0, 128, true);
-    
-    mSampler.addSound (new SamplerSound ("Sample", *mFormatReader, range, 60, 0.1, 0.1, 10.0));
-    
-    updateADSR();
+}
+
+AudioBuffer<float>& HelloSamplerAudioProcessor::getWaveForm()
+{
+    // get the last added synth sound as a SamplerSound*
+    auto sound = dynamic_cast<SamplerSound*>(mSampler.getSound(mSampler.getNumSounds() - 1).get());
+    if (sound)
+    {
+        return *sound->getAudioData();
+    }
+    // just in case it somehow happens that the sound doesn't exist or isn't a SamplerSound,
+    // return a static instance of an empty AudioBuffer here...
+    static AudioBuffer<float> dummybuffer;
+    return dummybuffer;
 }
 
 void HelloSamplerAudioProcessor::updateADSR()
